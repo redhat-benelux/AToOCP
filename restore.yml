@@ -1,0 +1,6 @@
+---
+- name: Restore the latest backup of Tower
+  hosts: all
+  gather_facts: false
+  roles:
+    - restore

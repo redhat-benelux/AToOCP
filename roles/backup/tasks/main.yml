@@ -4,14 +4,6 @@
     now: '{{ lookup("pipe", "date +%F-%T") }}'
 
 - include_tasks: openshift_auth.yml
-#   when: openshift_host is defined
-
-# - include_tasks: kubernetes_auth.yml
-#   when: kubernetes_context is defined
-
-# - name: Use kubectl or oc
-#   set_fact:
-#     openshift_oc_bin: "{{ openshift_oc_bin if openshift_oc_bin is defined else 'kubectl' }}"
 
 - name: Delete any existing management pod
   shell: |
