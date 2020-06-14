@@ -5,9 +5,9 @@
   run_once: true
   no_log: true
 
-- fail:
-    msg: "Only set one of kubernetes_context or openshift_host"
-  when: openshift_host is defined and kubernetes_context is defined
+# - fail:
+#     msg: "Only set one of kubernetes_context or openshift_host"
+#   when: openshift_host is defined and kubernetes_context is defined
 
 - include_tasks: "{{ tasks }}"
   with_items:
@@ -15,15 +15,15 @@
     - openshift.yml
   loop_control:
     loop_var: tasks
-  when: openshift_host is defined
+#  when: openshift_host is defined
 
-- include_tasks: "{{ tasks }}"
-  with_items:
-    - kubernetes_auth.yml
-    - kubernetes.yml
-  loop_control:
-    loop_var: tasks
-  when: kubernetes_context is defined
+# - include_tasks: "{{ tasks }}"
+#   with_items:
+#     - kubernetes_auth.yml
+#     - kubernetes.yml
+#   loop_control:
+#     loop_var: tasks
+#   when: kubernetes_context is defined
 
 - name: Use kubectl or oc
   set_fact:
@@ -84,48 +84,48 @@
     - postgres_svc_details is defined and postgres_svc_details.rc != 0
     - openshift_host is defined
 
-- name: Deploy PostgreSQL (Kubernetes)
-  block:
-    - name: Create Temporary Values File (Kubernetes)
-      tempfile:
-        state: file
-        suffix: .yml
-      register: values_file
+# - name: Deploy PostgreSQL (Kubernetes)
+#   block:
+#     - name: Create Temporary Values File (Kubernetes)
+#       tempfile:
+#         state: file
+#         suffix: .yml
+#       register: values_file
 
-    - name: Populate Temporary Values File (Kubernetes)
-      template:
-        src: postgresql-values.yml.j2
-        dest: "{{ values_file.path }}"
-      no_log: true
+#     - name: Populate Temporary Values File (Kubernetes)
+#       template:
+#         src: postgresql-values.yml.j2
+#         dest: "{{ values_file.path }}"
+#       no_log: true
 
-    - name: Deploy and Activate Postgres (Kubernetes)
-      shell: |
-        helm repo add stable https://kubernetes-charts.storage.googleapis.com
-        helm repo update
-        helm upgrade {{ postgresql_service_name }} \
-          --install \
-          --namespace {{ kubernetes_namespace }} \
-          --version="8.3.0" \
-          --values {{ values_file.path }} \
-          stable/postgresql
-      register: kubernetes_pg_activate
-      no_log: true
+#     - name: Deploy and Activate Postgres (Kubernetes)
+#       shell: |
+#         helm repo add stable https://kubernetes-charts.storage.googleapis.com
+#         helm repo update
+#         helm upgrade {{ postgresql_service_name }} \
+#           --install \
+#           --namespace {{ kubernetes_namespace }} \
+#           --version="8.3.0" \
+#           --values {{ values_file.path }} \
+#           stable/postgresql
+#       register: kubernetes_pg_activate
+#       no_log: true
 
-    - name: Remove tempfile
-      file:
-        path: "{{ values_file.path }}"
-        state: absent
-  when:
-    - pg_hostname is not defined or pg_hostname == ''
-    - postgres_svc_details is defined and postgres_svc_details.rc != 0
-    - kubernetes_context is defined
+#     - name: Remove tempfile
+#       file:
+#         path: "{{ values_file.path }}"
+#         state: absent
+#   when:
+#     - pg_hostname is not defined or pg_hostname == ''
+#     - postgres_svc_details is defined and postgres_svc_details.rc != 0
+#     - kubernetes_context is defined
 
-- name: Set postgresql hostname to helm package service (Kubernetes)
-  set_fact:
-    pg_hostname: "{{ postgresql_service_name }}"
-  when:
-    - pg_hostname is not defined or pg_hostname == ''
-    - kubernetes_context is defined
+# - name: Set postgresql hostname to helm package service (Kubernetes)
+#   set_fact:
+#     pg_hostname: "{{ postgresql_service_name }}"
+#   when:
+#     - pg_hostname is not defined or pg_hostname == ''
+#     - kubernetes_context is defined
 
 - name: Wait for Postgres to activate
   pause:
@@ -214,7 +214,7 @@
     - 'deployment'
     - 'supervisor'
     - 'launch_awx'
-  no_log: true
+  no_log: false
 
 - name: Apply Deployment
   shell: |

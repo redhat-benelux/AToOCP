@@ -24,7 +24,7 @@ secret_key='proute'
 
 #pg_hostname=
 #openshift_pg_pvc_name=ivo-ansibletower-pvc-postgresql
-#openshift_pg_emptydir=true
+openshift_pg_emptydir=true
 pg_username='admin'
 pg_password='proute'
 pg_database='tower'
@@ -36,6 +36,6 @@ pg_sslmode='prefer'  # set to 'verify-full' for client-side enforced SSL
 
 openshift_host=https://c100-e.eu-de.containers.cloud.ibm.com:30569
 # openshift_skip_tls_verify=false
-openshift_project=ansibletower-example
+openshift_project=tower-deploy-on-ocp
 openshift_user=rovandep@redhat.com
-openshift_token=0p3hzr0TuaxgwSw8qCgdG__PkUypnrB1SF4Yo9O_InM
+openshift_token=QVI-lEyDVbYWxd2hPjrnkuT38pGfNlpNRMwd-fQJq68
