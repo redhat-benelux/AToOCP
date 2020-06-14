@@ -22,10 +22,18 @@
   register: oc_result
   ignore_errors: yes
 
-- name: Ensure OpenShift CLI is installed
-  assert:
-    that:
-    - oc_result.rc == 0
-    msg: "Install the OpenShift CLI (oc)"
+# - name: Ensure OpenShift CLI is installed
+#   assert:
+#     that:
+#     - oc_result.rc == 0
+#     msg: "Install the OpenShift CLI (oc)"
 
-# https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+- name: Deploy last stable OpenShift CLI 
+  become: yes
+  unarchive:
+    src: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+    dest: /usr/bin
+    remote_src: yes
+  when: oc_result.rc != 0
+
+
