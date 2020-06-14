@@ -13,18 +13,18 @@ secret_key='proute'
 
 # Database Settings
 # =================
-# Four possible setup:
+# Three possible setup:
 # 1. Bring Your Own (BYO) DB; fill in pg_hostname and pg_* variables for Tower connection purposes
 # 2. Demo deploy DB on OCP; don't fill in pg_hostname, uncomment openshift_pg_emptydir, fill pg_* 
 #    for Tower connection purposes
-# 3. Production deploy with DB on OCP and auto PVC creation; don't fill in pg_hostname, fill pg_* 
-#    for Tower connection purposes
-# 4. Production deploy with DB on OCP and manual PVC creation; don't fill in pg_hostname, fill pg_*
-#    for Tower connection purposes and openshift_pg_pvc_name to point to manually create pvc 
+# 3. Production deploy with DB on OCP and auto PVC creation; fill pg_* for Tower connection purposes,
+#    let openshift_pg_emptydir commented and fill openshift_pg_pvc_name with the desired PVC 
+# Note: if PVC already exist, it is assumed that it is 
+
 
 #pg_hostname=
-#openshift_pg_pvc_name=ivo-ansibletower-pvc-postgresql
-openshift_pg_emptydir=true
+openshift_pg_pvc_name=ivo-ansibletower-pvc-postgresql
+#openshift_pg_emptydir=true
 pg_username='admin'
 pg_password='proute'
 pg_database='tower'

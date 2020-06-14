@@ -15,11 +15,33 @@
       register: pg_pvc_status
       ignore_errors: true
 
-    - name: Ensure PostgreSQL PVC is available
+    - name: Template PVC Deployment
+      template:
+        src: pvc.yml.j2
+        dest: "{{ kubernetes_base_path }}/pvc.yml"
+        mode: '0600'
+      when: pg_pvc_status.stdout != "Bound"
+
+    - name: Create Tower PVC 
+      command: "{{ openshift_oc_bin }} create -f {{ kubernetes_base_path}}/pvc.yml"
+      when: pg_pvc_status.stdout != "Bound"
+      register: pvc_result
+
+    - name: Wait for PVC to get status "Bound"
+      pause:
+        seconds: "{{ postgress_activate_wait }}"
+      when: pvc_result.changed 
+
+    - name: Check PVC status after creation
+      command: "{{ openshift_oc_bin }} get pvc {{ openshift_pg_pvc_name }} -n {{ openshift_project }} -o=jsonpath='{.status.phase}'"
+      register: pg_pvc_status
+      ignore_errors: true
+
+    - name: Ensure PostgreSQL PVC is available after deployment
       assert:
         that:
           - pg_pvc_status.stdout == "Bound"
-        msg: "Ensure a PVC named '{{ openshift_pg_pvc_name }}' is created and bound in the '{{ openshift_project }}' namespace."
+        msg: "Fail to create and bind PVC named '{{ openshift_pg_pvc_name }}' in project '{{ openshift_project }}' namespace."
   when:
     - pg_hostname is not defined or pg_hostname == ''
     - openshift_pg_emptydir is defined and (openshift_pg_emptydir | bool) != true
