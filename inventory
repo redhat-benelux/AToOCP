@@ -8,8 +8,8 @@ localhost ansible_connection=local
 # admin_user and admin_password: this will create or update a default admin (superuser) account in Tower
 # secret_key: It's *very* important that this stay the same between upgrades or you will lose the ability to decrypt your credentials
 admin_user=admin
-admin_password='proute'
-secret_key='proute'
+admin_password='temp password'
+secret_key='secret_key'
 
 # Database Settings
 # =================
@@ -23,10 +23,10 @@ secret_key='proute'
 
 
 #pg_hostname=
-openshift_pg_pvc_name=ivo-ansibletower-pvc-postgresql
+#openshift_pg_pvc_name='mypvcname'
 #openshift_pg_emptydir=true
 pg_username='admin'
-pg_password='proute'
+pg_password='pg_pasword'
 pg_database='tower'
 pg_port=5432
 pg_sslmode='prefer'  # set to 'verify-full' for client-side enforced SSL
@@ -34,8 +34,8 @@ pg_sslmode='prefer'  # set to 'verify-full' for client-side enforced SSL
 # Deploy into Openshift
 # =====================
 
-openshift_host=https://c100-e.eu-de.containers.cloud.ibm.com:30569
+openshift_host=https://ocp_api_endpoint:port
 # openshift_skip_tls_verify=false
-openshift_project=tower-deploy-on-ocp
-openshift_user=rovandep@redhat.com
-openshift_token=QVI-lEyDVbYWxd2hPjrnkuT38pGfNlpNRMwd-fQJq68
+openshift_project=project_namespace
+openshift_user=user_with_cluster_admin
+openshift_token=api_token

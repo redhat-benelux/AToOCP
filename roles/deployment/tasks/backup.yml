@@ -4,18 +4,18 @@
     now: '{{ lookup("pipe", "date +%F-%T") }}'
 
 - include_tasks: openshift_auth.yml
-  when: openshift_host is defined
+#   when: openshift_host is defined
 
-- include_tasks: kubernetes_auth.yml
-  when: kubernetes_context is defined
+# - include_tasks: kubernetes_auth.yml
+#   when: kubernetes_context is defined
 
-- name: Use kubectl or oc
-  set_fact:
-    kubectl_or_oc: "{{ openshift_oc_bin if openshift_oc_bin is defined else 'kubectl' }}"
+# - name: Use kubectl or oc
+#   set_fact:
+#     openshift_oc_bin: "{{ openshift_oc_bin if openshift_oc_bin is defined else 'kubectl' }}"
 
 - name: Delete any existing management pod
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       delete pod ansible-tower-management --grace-period=0 --ignore-not-found
 
 - name: Template management pod
@@ -24,11 +24,11 @@
 
 - name: Create management pod
   shell: |
-    echo {{ management_pod | quote }} | {{ kubectl_or_oc }} apply -f -
+    echo {{ management_pod | quote }} | {{ openshift_oc_bin }} apply -f -
 
 - name: Wait for management pod to start
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       get pod ansible-tower-management -o jsonpath="{.status.phase}"
   register: result
   until: result.stdout == "Running"
@@ -48,7 +48,7 @@
 
 - name: Dump database
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
       bash -c "PGPASSWORD={{ pg_password | quote }} \
         scl enable rh-postgresql10 -- pg_dump --clean --create \
           --host='{{ pg_hostname | default('postgresql') }}' \
@@ -65,7 +65,7 @@
 
 - name: Delete management pod
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       delete pod ansible-tower-management --grace-period=0 --ignore-not-found
 
 - name: Create backup archive

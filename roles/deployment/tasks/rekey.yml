@@ -1,31 +1,31 @@
 ---
 - include_tasks: openshift_auth.yml
-  when: openshift_host is defined
+#  when: openshift_host is defined
 
-- include_tasks: kubernetes_auth.yml
-  when: kubernetes_context is defined
+# - include_tasks: kubernetes_auth.yml
+#   when: kubernetes_context is defined
 
-- name: Use kubectl or oc
-  set_fact:
-    kubectl_or_oc: "{{ openshift_oc_bin if openshift_oc_bin is defined else 'kubectl' }}"
+# - name: Use kubectl or oc
+#   set_fact:
+#     openshift_oc_bin: "{{ openshift_oc_bin if openshift_oc_bin is defined else 'kubectl' }}"
 
 - set_fact:
     deployment_object: "deployment"
 
 - name: Record deployment size
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       get {{ deployment_object }} {{ kubernetes_deployment_name }} -o jsonpath="{.status.replicas}"
   register: deployment_size
 
 - name: Scale deployment down
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       scale {{ deployment_object }} {{ kubernetes_deployment_name }} --replicas=0
 
 - name: Wait for scale down
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} get pods \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} get pods \
       -o jsonpath='{.items[*].metadata.name}' \
       | tr -s '[[:space:]]' '\n' \
       | grep {{ kubernetes_deployment_name }} \
@@ -36,7 +36,7 @@
 
 - name: Delete any existing management pod
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       delete pod ansible-tower-management --grace-period=0 --ignore-not-found
 
 - name: Template management pod
@@ -45,11 +45,11 @@
 
 - name: Create management pod
   shell: |
-    echo {{ management_pod | quote }} | {{ kubectl_or_oc }} apply -f -
+    echo {{ management_pod | quote }} | {{ openshift_oc_bin }} apply -f -
 
 - name: Wait for management pod to start
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       get pod ansible-tower-management -o jsonpath="{.status.phase}"
   register: result
   until: result.stdout == "Running"
@@ -58,7 +58,7 @@
 
 - name: generate a new SECRET_KEY
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       exec -i ansible-tower-management -- bash -c "awx-manage regenerate_secret_key"
   register: new_key
 
@@ -68,5 +68,5 @@
 
 - name: Delete management pod
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       delete pod ansible-tower-management --grace-period=0 --ignore-not-found

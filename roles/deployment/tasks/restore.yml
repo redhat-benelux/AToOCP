@@ -1,13 +1,13 @@
 ---
 - include_tasks: openshift_auth.yml
-  when: openshift_host is defined
+#   when: openshift_host is defined
 
-- include_tasks: kubernetes_auth.yml
-  when: kubernetes_context is defined
+# - include_tasks: kubernetes_auth.yml
+#   when: kubernetes_context is defined
 
-- name: Use kubectl or oc
-  set_fact:
-    kubectl_or_oc: "{{ openshift_oc_bin if openshift_oc_bin is defined else 'kubectl' }}"
+# - name: Use kubectl or oc
+#   set_fact:
+#     openshift_oc_bin: "{{ openshift_oc_bin if openshift_oc_bin is defined else 'kubectl' }}"
 
 - name: Remove any present restore directories
   file:
@@ -30,18 +30,18 @@
 
 - name: Record deployment size
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       get {{ deployment_object }} {{ kubernetes_deployment_name }} -o jsonpath="{.status.replicas}"
   register: deployment_size
 
 - name: Scale deployment down
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       scale {{ deployment_object }} {{ kubernetes_deployment_name }} --replicas=0
 
 - name: Wait for scale down
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} get pods \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} get pods \
       -o jsonpath='{.items[*].metadata.name}' \
       | tr -s '[[:space:]]' '\n' \
       | grep {{ kubernetes_deployment_name }} \
@@ -54,7 +54,7 @@
   block:
     - name: Delete any existing management pod
       shell: |
-        {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+        {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
           delete pod ansible-tower-management --grace-period=0 --ignore-not-found
 
     - name: Template management pod
@@ -63,11 +63,11 @@
 
     - name: Create management pod
       shell: |
-        echo {{ management_pod | quote }} | {{ kubectl_or_oc }} apply -f -
+        echo {{ management_pod | quote }} | {{ openshift_oc_bin }} apply -f -
 
     - name: Wait for management pod to start
       shell: |
-        {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+        {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
           get pod ansible-tower-management -o jsonpath="{.status.phase}"
       register: result
       until: result.stdout == "Running"
@@ -76,7 +76,7 @@
 
     - name: Perform a PostgreSQL restore (for External Postgres)
       shell: |
-        {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+        {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
           exec -i ansible-tower-management -- bash -c "PGPASSWORD={{ pg_password | quote }} \
             scl enable rh-postgresql10 -- psql \
             --host={{ pg_hostname | default('postgresql') }} \
@@ -87,7 +87,7 @@
 
     - name: Delete management pod
       shell: |
-        {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+        {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
           delete pod ansible-tower-management --grace-period=0 --ignore-not-found
   when: pg_hostname is defined or pg_hostname != ''
 
@@ -95,24 +95,24 @@
   block:
     - name: Temporarily grant createdb role
       shell: |
-        POD=$({{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+        POD=$({{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
           get pods -l=name=postgresql --field-selector status.phase=Running -o jsonpath="{.items[0].metadata.name}")
-        {{ kubectl_or_oc }} exec $POD -n {{ kubernetes_namespace }} -- bash -c "\
+        {{ openshift_oc_bin }} exec $POD -n {{ kubernetes_namespace }} -- bash -c "\
           psql --dbname=template1 -c 'ALTER USER {{ pg_username }} CREATEDB;'"
 
     - name: Perform a PostgreSQL restore
       shell: |
-        POD=$({{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+        POD=$({{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
           get pods -l=name=postgresql --field-selector status.phase=Running -o jsonpath="{.items[0].metadata.name}")
-        {{ kubectl_or_oc }} exec -i $POD -n {{ kubernetes_namespace }} -- bash -c "\
+        {{ openshift_oc_bin }} exec -i $POD -n {{ kubernetes_namespace }} -- bash -c "\
           psql --dbname=template1" < {{ playbook_dir }}/tower-openshift-restore/tower.db
       no_log: true
 
     - name: Revoke createdb role
       shell: |
-        POD=$({{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+        POD=$({{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
           get pods -l=name=postgresql --field-selector status.phase=Running -o jsonpath="{.items[0].metadata.name}")
-        {{ kubectl_or_oc }} exec $POD -n {{ kubernetes_namespace }} -- bash -c "\
+        {{ openshift_oc_bin }} exec $POD -n {{ kubernetes_namespace }} -- bash -c "\
           psql --dbname=template1 -c 'ALTER USER {{ pg_username }} NOCREATEDB;'"
   when: pg_hostname is not defined or pg_hostname == ''
 
@@ -123,6 +123,6 @@
 
 - name: Scale deployment back up
   shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+    {{ openshift_oc_bin }} -n {{ kubernetes_namespace }} \
       scale {{ deployment_object }} {{ kubernetes_deployment_name }} --replicas={{ deployment_size.stdout }}
   when: deployment_size.stdout != ''
