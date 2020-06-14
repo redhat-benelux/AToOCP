@@ -22,12 +22,6 @@
   register: oc_result
   ignore_errors: yes
 
-# - name: Ensure OpenShift CLI is installed
-#   assert:
-#     that:
-#     - oc_result.rc == 0
-#     msg: "Install the OpenShift CLI (oc)"
-
 - name: Deploy last stable OpenShift CLI 
   become: yes
   unarchive:
