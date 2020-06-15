@@ -15,7 +15,7 @@ First do a git clone of this repo:
 git clone https://github.com/redhat-benelux/tower-deploy_on-ocp.git
 ```
 
-Then modify the "inventory" file to match your needs. This file has been slighty reorganized for the sake of clarity and the comments are self-explanatory: 
+Then modify the "*inventory*" file to match your needs. This file has been slighty reorganized for the sake of clarity and the comments are self-explanatory: 
 ```
 localhost ansible_connection=local 
 #ansible_python_interpreter="/usr/bin/env python3"
@@ -25,7 +25,7 @@ localhost ansible_connection=local
 # Ansible Tower Settings
 # ======================
 # admin_user and admin_password: this will create or update a default admin (superuser) account in Tower
-# secret_key: It's *very* important that this stay the same between upgrades or you will lose the ability to decrypt your credentials
+# secret_key: It's "*very*" important that this stay the same between upgrades or you will lose the ability to decrypt your credentials
 admin_user=admin
 admin_password='temp password'
 secret_key='secret_key'
@@ -60,24 +60,24 @@ openshift_user=user_with_cluster_admin
 openshift_token=api_token
 ```
 
-With the "inventory" file being customized to your environment, run the following command to execute the installation role: 
+With the "*inventory*" file being customized to your environment, run the following command to execute the installation role: 
 ```
 ansible-playbook -i inventory install.yml 
 ```
 
 ## Backup
-With the same "inventory" file being customized to your environment, run the following command to execute the backup role:
+With the same "*inventory*" file being customized to your environment, run the following command to execute the backup role:
 ```
 ansible-playbook -i inventory backup.yml
 ``` 
 This will create 2 files each time:
 
 - one backup file with the timestamp of the backup
-- one backup file called "latest" replacing the previous "latest" file
+- one backup file called "*latest*" replacing the previous "*latest*" file
 
 ## Restore
-With the same "inventory" file being customized to your environment, run the following command to execute the restore role:
+With the same "*inventory*" file being customized to your environment, run the following command to execute the restore role:
 ```
 ansible-playbook -i inventory restore.yml
 ``` 
-By default, the restore role will pickup the "latest" available backup.
+By default, the restore role will pickup the "*latest*" available backup.
