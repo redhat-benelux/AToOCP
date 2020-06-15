@@ -1,9 +1,7 @@
 # Ansible Tower on OpenShift Container Platform
 
 This repository is based on the Ansible roles provided with the Red Hat Ansible Tower installer for OpenShift
-available at this [link](https://releases.ansible.com/ansible-tower/setup_openshift/).
-
-The following modification have been done to the official roles:
+available at this [link](https://releases.ansible.com/ansible-tower/setup_openshift/). The following modification have been done to the official roles:
 
 - make them independent of the "setup_openshift.sh" script which allows a direct usage without downloading the installer or included in a pipeline for redeployment or included int Ansible Tower with a runner to do the backup and restore.
 - remove all the non OpenShift context to focus and improve deployment speed
